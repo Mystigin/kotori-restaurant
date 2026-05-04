@@ -279,10 +279,196 @@
     requestAnimationFrame(openMenu);
   }
 
-  /* clear out any leftover localStorage transforms from in-modal editor sessions
-     so they can't override the per-image rules baked into pages.css */
+  /* clear out leftover transforms from older editor sessions */
   try { localStorage.removeItem('kotori-menu-transforms-v1'); } catch (e) {}
   try { localStorage.removeItem('kotori-menu-transforms-mobile-v1'); } catch (e) {}
+
+  // ─── phone-only object-position editor ──────────────────────────────────
+  // Each menu image uses object-fit: cover so it fills the page area
+  // completely (no letterbox; book + menu read as one solid object). Drag
+  // shifts the image's object-position (X%, Y%) within its page. Pinch
+  // adjusts a CSS scale factor we layer on via background-size... actually
+  // we keep it simple: drag = position, pinch = no-op for now.
+  var STORAGE_KEY = 'kotori-menu-positions-v2';
+
+  function isPhone() {
+    return window.matchMedia('(max-width: 600px)').matches;
+  }
+  function imgKey(img) {
+    var m = (img.getAttribute('src') || '').match(/menu-(\d)\.png/);
+    return m ? 'menu-' + m[1] : null;
+  }
+  function loadMap() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+    catch (e) { return {}; }
+  }
+  function saveMap(m) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(m)); } catch (e) {}
+  }
+  /* Read current effective object-position. Prefer inline (active edit) >
+     localStorage > computed value > sensible default of 50% 50%. */
+  function getPos(img) {
+    var inline = img.style.objectPosition || '';
+    var t = inline.match(/([-\d.]+)%\s+([-\d.]+)%/);
+    if (t) return { x: parseFloat(t[1]), y: parseFloat(t[2]) };
+    var key = imgKey(img);
+    if (key) {
+      var saved = loadMap()[key];
+      if (saved) return { x: saved.x, y: saved.y };
+    }
+    var cs = window.getComputedStyle(img).objectPosition;
+    var c = (cs || '').match(/([-\d.]+)%\s+([-\d.]+)%/);
+    if (c) return { x: parseFloat(c[1]), y: parseFloat(c[2]) };
+    return { x: 50, y: 50 };
+  }
+  function applyPos(img, pos) {
+    img.style.objectPosition = pos.x.toFixed(1) + '% ' + pos.y.toFixed(1) + '%';
+  }
+  function persistPos(img, pos) {
+    var key = imgKey(img);
+    if (!key) return;
+    var map = loadMap();
+    map[key] = pos;
+    saveMap(map);
+  }
+  function applyAllForViewport() {
+    var phone = isPhone();
+    var map = loadMap();
+    pageImgs.forEach(function (img) {
+      var key = imgKey(img);
+      if (!key) return;
+      if (phone && map[key]) applyPos(img, map[key]);
+      else img.style.objectPosition = '';
+    });
+  }
+  applyAllForViewport();
+  window.addEventListener('resize', applyAllForViewport);
+
+  /* edit button + panel — appended to <body> because the modal element has
+     transform: translate(-50%,-50%), which would make it the containing
+     block for descendant position:fixed elements. */
+  var editToggle = document.createElement('button');
+  editToggle.className = 'book-edit-mobile';
+  editToggle.type = 'button';
+  editToggle.setAttribute('aria-label', 'Edit menu image positions');
+  editToggle.textContent = 'edit';
+  document.body.appendChild(editToggle);
+
+  var panel = document.createElement('div');
+  panel.className = 'book-edit-mobile-panel';
+  panel.innerHTML = [
+    '<div class="bemp-head">drag image to position</div>',
+    '<div class="bemp-rows"></div>',
+    '<div class="bemp-actions">',
+      '<button type="button" class="bemp-copy">copy css</button>',
+      '<button type="button" class="bemp-reset">reset all</button>',
+      '<button type="button" class="bemp-done">done</button>',
+    '</div>',
+    '<div class="bemp-toast"></div>'
+  ].join('');
+  document.body.appendChild(panel);
+  var rowsHost = panel.querySelector('.bemp-rows');
+  var toast    = panel.querySelector('.bemp-toast');
+
+  function refreshRows() {
+    rowsHost.innerHTML = '';
+    pageImgs.forEach(function (img) {
+      var key = imgKey(img); if (!key) return;
+      var pos = getPos(img);
+      var row = document.createElement('div');
+      row.className = 'bemp-row';
+      row.innerHTML = [
+        '<span class="bemp-label">', key, '</span>',
+        '<span class="bemp-vals">x ', pos.x.toFixed(0), '% · y ', pos.y.toFixed(0), '%</span>'
+      ].join('');
+      rowsHost.appendChild(row);
+    });
+  }
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('on');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(function () { toast.classList.remove('on'); }, 1600);
+  }
+  function enterEdit() {
+    if (!isPhone()) { showToast('phone-only'); return; }
+    document.body.classList.add('is-editing');
+    refreshRows();
+  }
+  function exitEdit() { document.body.classList.remove('is-editing'); }
+
+  editToggle.addEventListener('click', function (e) {
+    e.stopPropagation();
+    if (document.body.classList.contains('is-editing')) exitEdit();
+    else enterEdit();
+  });
+  panel.querySelector('.bemp-done').addEventListener('click', function (e) {
+    e.stopPropagation(); exitEdit();
+  });
+  panel.querySelector('.bemp-reset').addEventListener('click', function (e) {
+    e.stopPropagation();
+    saveMap({});
+    pageImgs.forEach(function (img) { img.style.objectPosition = ''; });
+    refreshRows();
+    showToast('reset');
+  });
+  panel.querySelector('.bemp-copy').addEventListener('click', function (e) {
+    e.stopPropagation();
+    var lines = ['@media (max-width: 600px) {'];
+    pageImgs.forEach(function (img) {
+      var key = imgKey(img); if (!key) return;
+      var pos = getPos(img);
+      lines.push('  .book-mount.is-modal .page-image .page-image-img[src$="' + key + '.png"] { object-position: ' + pos.x.toFixed(1) + '% ' + pos.y.toFixed(1) + '% !important; }');
+    });
+    lines.push('}');
+    var css = lines.join('\n');
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(css).then(function () { showToast('copied'); },
+                                             function () { window.prompt('Copy this CSS:', css); });
+    } else {
+      window.prompt('Copy this CSS:', css);
+    }
+  });
+
+  /* Drag on the menu images. We translate touch movement (in CSS pixels)
+     into an object-position delta. The conversion factor depends on how
+     much "free" image there is to scroll past — for object-fit: cover with
+     a near-matching aspect, that free range is small, so we use a brisk
+     factor (each px of touch ≈ 0.6% of position). */
+  var DRAG_FACTOR = 0.6;
+  pageImgs.forEach(function (img) {
+    var dragStart = null, startPos = null;
+    img.addEventListener('touchstart', function (e) {
+      if (!document.body.classList.contains('is-editing') || !isPhone()) return;
+      if (e.touches.length !== 1) return;
+      e.stopPropagation(); e.preventDefault();
+      startPos = getPos(img);
+      dragStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }, { passive: false });
+    img.addEventListener('touchmove', function (e) {
+      if (!document.body.classList.contains('is-editing') || !isPhone()) return;
+      if (!dragStart || !startPos) return;
+      e.stopPropagation(); e.preventDefault();
+      var dx = e.touches[0].clientX - dragStart.x;
+      var dy = e.touches[0].clientY - dragStart.y;
+      // dragging right/down should pan the visible window right/down,
+      // which means object-position percentage decreases (image shifts
+      // the OTHER way), so we subtract.
+      var nx = Math.max(0, Math.min(100, startPos.x - dx * DRAG_FACTOR));
+      var ny = Math.max(0, Math.min(100, startPos.y - dy * DRAG_FACTOR));
+      applyPos(img, { x: nx, y: ny });
+    }, { passive: false });
+    function commit() {
+      if (!startPos) return;
+      var inline = img.style.objectPosition || '';
+      var t = inline.match(/([-\d.]+)%\s+([-\d.]+)%/);
+      if (t) persistPos(img, { x: parseFloat(t[1]), y: parseFloat(t[2]) });
+      dragStart = null; startPos = null;
+      refreshRows();
+    }
+    img.addEventListener('touchend',    function (e) { if (document.body.classList.contains('is-editing')) { e.stopPropagation(); commit(); } });
+    img.addEventListener('touchcancel', function (e) { if (document.body.classList.contains('is-editing')) { e.stopPropagation(); commit(); } });
+  });
 
   // initial state
   updateZ();
