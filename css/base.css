@@ -238,6 +238,161 @@ body {
   .deck-nav { gap: 8px; }
 }
 
+/* ─── reviews section (sits above the footer on every page) ─────────── */
+.reviews {
+  position: relative;
+  padding: 72px clamp(20px, 5vw, 56px) 80px;
+  background:
+    radial-gradient(ellipse at 25% 0%, rgba(193,74,42,.18), transparent 55%),
+    radial-gradient(ellipse at 80% 100%, rgba(184,153,104,.12), transparent 55%),
+    linear-gradient(180deg, #150c08 0%, #0a0706 60%, #060403 100%);
+  color: var(--washi);
+  border-top: 1px solid rgba(184,153,104,.18);
+  overflow: hidden;
+}
+.reviews::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.4' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .35 -.05'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  opacity: .12;
+  mix-blend-mode: overlay;
+}
+.reviews > * { position: relative; z-index: 1; }
+
+.reviews-head {
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto 44px;
+}
+.reviews-head .eyebrow {
+  font-family: var(--body);
+  font-weight: 600;
+  font-size: .62rem;
+  letter-spacing: .42em;
+  text-transform: uppercase;
+  color: var(--vermillion-2);
+  display: inline-block;
+  margin-bottom: 14px;
+}
+.reviews-head h2 {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(2rem, 5vw, 2.7rem);
+  line-height: 1.05;
+  margin: 0 0 22px;
+  color: var(--washi);
+  text-shadow: 0 2px 12px rgba(0,0,0,.45);
+}
+.reviews-meta {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.reviews-meta .reviews-stars {
+  color: var(--gold);
+  font-size: 1.1rem;
+  letter-spacing: .14em;
+  text-shadow: 0 1px 0 rgba(0,0,0,.5);
+}
+.reviews-meta .reviews-rating {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 1.4rem;
+  color: var(--washi);
+}
+.reviews-meta .reviews-count {
+  font-size: .78rem;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--washi-dim);
+}
+
+.reviews-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  max-width: 1180px;
+  margin: 0 auto 40px;
+}
+.review-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 26px 28px 28px;
+  background:
+    radial-gradient(ellipse at 30% 0%, rgba(255,255,255,.4), transparent 36%),
+    linear-gradient(180deg, #fff7e5 0%, #f3e7c9 100%);
+  color: var(--sumi);
+  border-radius: 4px;
+  border: 1px solid rgba(184,153,104,.32);
+  box-shadow:
+    0 18px 40px -18px rgba(0,0,0,.6),
+    inset 0 1px 0 rgba(255,255,255,.55);
+}
+.review-card::before {
+  content: "";
+  position: absolute;
+  top: 14px; left: 14px; right: 14px; bottom: 14px;
+  border: 1px solid rgba(120,90,50,.10);
+  pointer-events: none;
+  border-radius: 2px;
+}
+.review-card .review-stars {
+  color: var(--vermillion);
+  font-size: .98rem;
+  letter-spacing: .14em;
+}
+.review-card .review-quote {
+  font-family: var(--display);
+  font-style: italic;
+  font-size: 1.02rem;
+  line-height: 1.55;
+  margin: 0;
+  color: #1f1208;
+}
+.review-card .review-author {
+  margin-top: auto;
+  font-family: var(--body);
+  font-size: .68rem;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: rgba(31,18,8,.65);
+}
+
+.reviews-actions {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+@media (max-width: 600px) {
+  .reviews { padding: 56px 18px 60px; }
+  .reviews-head { margin-bottom: 32px; }
+  .reviews-head h2 { font-size: clamp(1.7rem, 7vw, 2.1rem); }
+  .reviews-list {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  .review-card { padding: 22px 22px 24px; }
+  .review-card .review-quote { font-size: .96rem; }
+  .reviews-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .reviews-actions .btn {
+    text-align: center;
+    justify-content: center;
+  }
+}
+
 /* ─── shared footer ─── */
 .foot {
   position: relative;
