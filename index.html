@@ -11,8 +11,8 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 
   <link rel="icon" href="images/kotori-logo.png" type="image/png">
-  <link rel="stylesheet" href="css/base.css?v=11">
-  <link rel="stylesheet" href="css/pages.css?v=11">
+  <link rel="stylesheet" href="css/base.css?v=12">
+  <link rel="stylesheet" href="css/pages.css?v=12">
 </head>
 <body class="page-home">
 
@@ -110,6 +110,12 @@
   <div class="book-mount" id="menu">
     <button class="book-close" type="button" aria-label="Close menu">×</button>
     <div class="book-stage" data-state="0">
+      <!-- phone-only flat composite: each menu image is a direct child of
+           .book-stage, positioned in % of the book, so book + images scale
+           as one solid object. Hidden on desktop (CSS). -->
+      <img class="menu-flat" data-menu="menu-1" src="images/menu-1.png" alt="" aria-hidden="true">
+      <img class="menu-flat" data-menu="menu-2" src="images/menu-2.png" alt="" aria-hidden="true">
+      <img class="menu-flat" data-menu="menu-3" src="images/menu-3.png" alt="" aria-hidden="true">
       <div class="book">
         <div class="book-spine" aria-hidden="true"></div>
 
@@ -191,9 +197,9 @@
     <img class="lightbox-img" src="" alt="">
   </div>
 
-  <script src="js/intro.js?v=11"></script>
-  <script src="js/book.js?v=11"></script>
-  <script src="js/gallery.js?v=11"></script>
-  <script src="js/boats.js?v=11"></script>
+  <script src="js/intro.js?v=12"></script>
+  <script src="js/book.js?v=12"></script>
+  <script src="js/gallery.js?v=12"></script>
+  <script src="js/boats.js?v=12"></script>
 </body>
 </html>

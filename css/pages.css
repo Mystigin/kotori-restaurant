@@ -1472,6 +1472,10 @@ body.is-menu-leaving::before {
 
 .book-phone-stack { display: none !important; }    /* legacy fallback, never used */
 
+/* phone-only flat menu composite — hidden by default, shown via the
+   @media (max-width: 600px) block below */
+.menu-flat { display: none; }
+
 /* phone: 3D book renders the same as desktop, but sized to fit the viewport
    and with the desktop-calibrated per-image transforms neutralised (those
    pixel-based translates were dialled in for a 760px-tall page; on a phone's
@@ -1508,45 +1512,80 @@ body.is-menu-leaving::before {
     aspect-ratio: auto;
     flex: 0 0 auto;
   }
-  /* SOLID OBJECT — phone menu rendering.
-     Each <img> uses the exact spec values you tuned in /menu-editor.html
-     (object-position + scale + matched transform-origin). To stop iOS
-     Safari's 3D rendering bugs from affecting these images, we break the
-     .page-image out of the surrounding transform-style: preserve-3d
-     context with `transform-style: flat`. The image then renders in a
-     normal 2D context (fast, predictable, identical to the editor's
-     preview) while the parent .leaf still flips in 3D. The book frame
-     is fully covered by the menu image (object-fit: cover), so book +
-     menu render as one painted surface that can't drift apart. */
-  .book-mount.is-modal .page-image {
-    transform-style: flat;
-    -webkit-transform-style: flat;
+  /* PHONE BOOK = SOLID FLAT COMPOSITE.
+     The 3D book is hidden on phone; instead, three menu images are placed
+     directly inside .book-stage at the exact percentages you locked in via
+     /menu-editor.html. Because every coordinate is a percentage of the
+     book canvas, the menu images are LOCKED to the book — when the book
+     scales for any phone size, every image scales with it as one unit and
+     the layout reproduces identically. No object-fit, no transform tricks,
+     no 3D rendering quirks. */
+  .book-mount.is-modal .book      { visibility: hidden; }
+  .book-mount.is-modal .book-spine { display: none; }
+
+  /* The book-stage is the painted surface (parchment + spine pseudo). */
+  .book-mount.is-modal .book-stage {
+    background:
+      linear-gradient(180deg, #fff7e5 0%, #f3e7c9 100%);
+    border-radius: 4px;
+    box-shadow: 0 18px 40px -10px rgba(0,0,0,.7);
+    overflow: hidden;
+    position: relative;
   }
-  .book-mount.is-modal .page-image .page-image-img {
+  .book-mount.is-modal .book-stage::after {
+    content: "";
     position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    will-change: transform;
+    top: 0; bottom: 0;
+    left: 50%;
+    width: 6px;
+    transform: translateX(-50%);
+    background: linear-gradient(90deg, rgba(0,0,0,.45) 0%, rgba(80,42,17,.3) 30%, rgba(255,220,160,.2) 50%, rgba(80,42,17,.3) 70%, rgba(0,0,0,.45) 100%);
+    z-index: 6;
+    pointer-events: none;
   }
-  .book-mount.is-modal .page-image[data-menu="menu-1"] .page-image-img {
-    object-position: 22.4% 47.8%;
-    transform: scale(1.012);
-    -webkit-transform: scale(1.012);
-    transform-origin: 22.4% 47.8%;
+
+  /* Each menu image is positioned in % of book-stage (the editor's canvas).
+     Position + size are LOCKED to the book — the image is part of the book
+     composite and scales with it as a single unit. */
+  .menu-flat,
+  .book-mount.is-modal .menu-flat {
+    position: absolute;
+    display: block;
+    pointer-events: none;
+    transition: opacity .35s ease;
+    z-index: 4;
   }
-  .book-mount.is-modal .page-image[data-menu="menu-2"] .page-image-img {
-    object-position: 50.0% 50.0%;
-    transform: scale(0.966);
-    -webkit-transform: scale(0.966);
-    transform-origin: 50.0% 50.0%;
+  .book-mount.is-modal .menu-flat[data-menu="menu-1"] {
+    left:    0.38%;
+    top:     0.00%;
+    width:  48.59%;
+    height: 102.04%;
   }
-  .book-mount.is-modal .page-image[data-menu="menu-3"] .page-image-img {
-    object-position: 50.0% 50.0%;
-    transform: scale(0.976);
-    -webkit-transform: scale(0.976);
-    transform-origin: 50.0% 50.0%;
+  .book-mount.is-modal .menu-flat[data-menu="menu-2"] {
+    left:   50.29%;
+    top:     0.00%;
+    width:  49.65%;
+    height: 104.26%;
+  }
+  .book-mount.is-modal .menu-flat[data-menu="menu-3"] {
+    left:   51.51%;
+    top:     0.77%;
+    width:  47.31%;
+    height:  99.36%;
+  }
+
+  /* Visibility per state. State 0 (closed) and state 1 (first spread) both
+     show menu-1 + menu-2 — phone skips the cover ceremony and the menu is
+     visible the moment the modal opens. State 2 cross-fades to menu-3. */
+  .book-mount.is-modal .menu-flat { opacity: 0; }
+  .book-mount.is-modal .book-stage[data-state="0"] .menu-flat[data-menu="menu-1"],
+  .book-mount.is-modal .book-stage[data-state="0"] .menu-flat[data-menu="menu-2"],
+  .book-mount.is-modal .book-stage[data-state="1"] .menu-flat[data-menu="menu-1"],
+  .book-mount.is-modal .book-stage[data-state="1"] .menu-flat[data-menu="menu-2"] {
+    opacity: 1;
+  }
+  .book-mount.is-modal .book-stage[data-state="2"] .menu-flat[data-menu="menu-3"] {
+    opacity: 1;
   }
   /* compact controls */
   .book-mount.is-modal .book-close {
