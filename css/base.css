@@ -471,6 +471,7 @@ body {
     grid-column: 1 / span 2;
     grid-row: auto;
     margin-top: 18px;
+    margin-left: 0;       /* desktop-only nudge — drop it once stacked */
   }
 }
 @media (max-width: 760px) {
