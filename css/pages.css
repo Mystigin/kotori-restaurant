@@ -45,12 +45,24 @@
   width: 100%; height: 100%;
   object-fit: cover;
   z-index: -2;
-  opacity: 0;
+  /* Starts at 0.01 (not 0) so iOS Safari treats it as visible enough for
+     autoplay — opacity: 0 is one of the conditions that blocks autoplay
+     even on muted, playsinline videos. The user sees no difference. */
+  opacity: 0.01;
   animation: heroVideoIn 1.4s var(--ease) 2.6s forwards;
 }
 .intro-skipped .hero-video,
 body.no-intro .hero-video {
   animation: heroVideoIn .001ms 0s forwards;
+}
+/* On phone, skip the fade-in entirely — iOS autoplay heuristics also weigh
+   in-viewport visibility, and getting the video to a stable opacity:1
+   before the page finishes loading is the safest route. */
+@media (max-width: 600px) {
+  .hero-video {
+    opacity: 1;
+    animation: none;
+  }
 }
 @keyframes heroVideoIn {
   to { opacity: 1; }
