@@ -1524,6 +1524,8 @@ body.is-menu-leaving::before {
   .book-mount.is-modal .cover-tap { display: none !important; }
   /* nudge the cover logo down a touch so it doesn't kiss the gold border */
   .book-mount.is-modal .cover-logo { margin-top: 28px; }
+  /* lift the VOL.IV / SPRING NO.02 line up so it clears the bottom gold border */
+  .book-mount.is-modal .cover-meta { margin-bottom: 56px; }
 }
 
 /* ─── editor mode ─── */
