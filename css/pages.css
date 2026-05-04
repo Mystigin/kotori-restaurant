@@ -260,7 +260,7 @@ body.no-intro .hero-scroll { animation: none; opacity: 1; }
     radial-gradient(ellipse at 9% 76%, rgba(107,68,35,.24), transparent 31rem),
     linear-gradient(180deg, #fbf2dc 0%, #efe2c5 58%, #d7c19d 100%);
   color: var(--sumi);
-  padding: clamp(80px, 11vw, 150px) clamp(20px, 5vw, 56px) clamp(80px, 11vw, 150px);
+  padding: clamp(40px, 4.5vw, 64px) clamp(20px, 5vw, 56px) clamp(80px, 11vw, 150px);
   overflow: hidden;
 }
 .gallery::before {
