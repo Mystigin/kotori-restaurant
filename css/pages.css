@@ -134,7 +134,13 @@ body.no-intro .hero-rule { width: 64px; opacity: .85; }
 
 .hero-scroll {
   position: absolute;
-  bottom: 28px; left: 50%; transform: translateX(-50%);
+  bottom: 28px;
+  /* center via auto margins (NOT translateX(-50%)) — heroFadeUp's keyframe
+     ends with transform: translateY(0) which would otherwise wipe the X
+     centering, leaving the element offset to the right. */
+  left: 0; right: 0;
+  margin: 0 auto;
+  width: max-content;
   font-family: var(--body);
   font-size: .68rem;
   letter-spacing: .35em;
@@ -1487,32 +1493,30 @@ body.is-menu-leaving::before {
      desktop/tablet open-state rule (`.book-stage[data-state]:not(...)`)
      which sets width: 188vw (designed for horizontal-scroll tablets,
      not modal phones). */
+  /* Adaptive sizing: pick the LARGEST 1.42:1 rectangle that fits inside both
+     96vw wide and (100dvh - 130px) tall. Each half is therefore 0.71:1, which
+     matches the natural portrait aspect of the menu PNGs — so object-fit:
+     contain on each page produces a clean, full-bleed render with negligible
+     letterbox on every phone, regardless of viewport size or aspect ratio. */
   .book-mount.is-modal .book-stage,
   .book-mount.is-modal .book-stage[data-state]:not([data-state="0"]) {
-    width: min(96vw, calc((100dvh - 150px) * 1.4));
-    max-width: min(96vw, calc((100dvh - 150px) * 1.4));
-    height: min(calc(96vw / 1.4), calc(100dvh - 150px));
-    max-height: calc(100dvh - 150px);
-    aspect-ratio: auto;
+    width: min(96vw, calc((100dvh - 130px) * 1.42));
+    max-width: min(96vw, calc((100dvh - 130px) * 1.42));
+    height: min(calc(96vw / 1.42), calc(100dvh - 130px));
+    max-height: calc(100dvh - 130px);
+    aspect-ratio: 1.42 / 1;
     flex: 0 0 auto;
   }
-  /* Per-image positions tuned on iPhone 14 Pro Max (~430 CSS px wide).
-     Expressed in vw rather than px so the same crop framing reproduces on
-     every phone — whatever the viewport width, 1vw scales linearly with it,
-     just like the book-stage (96vw) and the page area (48vw). Original
-     px values were:
-       menu-1: translate(  3.7px, -278.7px)
-       menu-2: translate( -0.4px, -261.0px)
-       menu-3: translate( -3.0px, -250.3px)
-     Converted via (px / 430 * 100)vw. */
-  .book-mount.is-modal .page-image .page-image-img[src$="menu-1.png"] {
-    transform: translate(0.86vw, -64.8vw) scale(1.000);
-  }
-  .book-mount.is-modal .page-image .page-image-img[src$="menu-2.png"] {
-    transform: translate(-0.09vw, -60.7vw) scale(1.000);
-  }
+  /* Skip per-image transforms on phone — the book-stage above is sized to
+     match the menu PNG aspect ratio, so object-fit: contain renders each
+     page cleanly without needing any crop-translate hack. Hand-tuned px
+     values were inherently device-specific; a single constant aspect-ratio
+     setup is portable to every screen. */
+  .book-mount.is-modal .page-image .page-image-img,
+  .book-mount.is-modal .page-image .page-image-img[src$="menu-1.png"],
+  .book-mount.is-modal .page-image .page-image-img[src$="menu-2.png"],
   .book-mount.is-modal .page-image .page-image-img[src$="menu-3.png"] {
-    transform: translate(-0.7vw, -58.2vw) scale(1.000);
+    transform: none;
   }
   /* compact controls */
   .book-mount.is-modal .book-close {
