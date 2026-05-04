@@ -1472,11 +1472,10 @@ body.is-menu-leaving::before {
 
 .book-phone-stack { display: none !important; }    /* legacy fallback, never used */
 
-/* phone-only composite (cover-flat, flipcard, menu-flat images) — hidden by
-   default; the (max-width: 600px) block below shows them. */
+/* phone-only composite (cover-flat, menu-flat images) — hidden by default;
+   the (max-width: 600px) block below shows them. */
 .menu-flat,
-.cover-flat,
-.flipcard { display: none; }
+.cover-flat { display: none; }
 
 /* phone: 3D book renders the same as desktop, but sized to fit the viewport
    and with the desktop-calibrated per-image transforms neutralised (those
@@ -1526,7 +1525,6 @@ body.is-menu-leaving::before {
   .book-mount.is-modal .book-spine { display: none; }
 
   .book-mount.is-modal .cover-flat,
-  .book-mount.is-modal .flipcard,
   .book-mount.is-modal .menu-flat {
     display: block;
   }
@@ -1587,74 +1585,61 @@ body.is-menu-leaving::before {
     pointer-events: none;
   }
 
-  /* ── LEFT PAGE — menu-1 (fixed) ─────────────────────────────────────── */
-  .book-mount.is-modal .menu-flat[data-menu="menu-1"] {
+  /* ── LEFT PAGE — menu-1 (fixed at state 1, fades at state 2) ─────────── */
+  .book-mount.is-modal .menu-flat {
     position: absolute;
+    pointer-events: none;
+  }
+  .book-mount.is-modal .menu-flat[data-menu="menu-1"] {
     left:    0.38%;
     top:     0.00%;
     width:  48.59%;
     height: 102.04%;
     z-index: 4;
-    transition: opacity .45s ease;
     opacity: 0;
+    transition: opacity .55s ease;
   }
-  .book-mount.is-modal .book-stage[data-state="1"] .menu-flat[data-menu="menu-1"],
-  .book-mount.is-modal .book-stage[data-state="2"] .menu-flat[data-menu="menu-1"] {
+  .book-mount.is-modal .book-stage[data-state="1"] .menu-flat[data-menu="menu-1"] {
     opacity: 1;
   }
 
-  /* ── RIGHT PAGE — flipcard (menu-2 front / menu-3 back) ──────────────── */
-  .book-mount.is-modal .flipcard {
-    position: absolute;
-    left: 50%;
-    top: 0;
-    width: 50%;
-    height: 100%;
-    z-index: 4;
-    transform-style: preserve-3d;
-    -webkit-transform-style: preserve-3d;
-    transform-origin: left center;
-    transform: rotateY(0);
-    transition: transform 1s cubic-bezier(.42, .04, .15, .97), opacity .45s ease;
-    opacity: 0;
-  }
-  .book-mount.is-modal .book-stage[data-state="1"] .flipcard,
-  .book-mount.is-modal .book-stage[data-state="2"] .flipcard {
-    opacity: 1;
-  }
-  .book-mount.is-modal .book-stage[data-state="2"] .flipcard {
-    transform: rotateY(-180deg);
-    -webkit-transform: rotateY(-180deg);
-  }
-  .book-mount.is-modal .flipcard-face {
-    position: absolute;
-    inset: 0;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    transform: translateZ(0.01px);
-    -webkit-transform: translateZ(0.01px);
-  }
-  .book-mount.is-modal .flipcard-back {
-    transform: rotateY(180deg) translateZ(0.01px);
-    -webkit-transform: rotateY(180deg) translateZ(0.01px);
-  }
-
-  /* Menu-2 inside flipcard-front. The flipcard is 50% of book-stage, so
-     percentages here are relative to that half. We map editor-spec book-%
-     values into card-% values: card-x = (book-x - 50) / 50 * 100, etc. */
-  .book-mount.is-modal .flipcard-front .menu-flat[data-menu="menu-2"] {
-    position: absolute;
-    left:    0.58%;     /* (50.29 - 50) / 50 * 100 */
+  /* ── RIGHT PAGE — menu-2 (state 1 only, slides off at state 2) ─────── */
+  .book-mount.is-modal .menu-flat[data-menu="menu-2"] {
+    left:   50.29%;
     top:     0.00%;
-    width:  99.30%;     /* 49.65 / 50 * 100 */
+    width:  49.65%;
     height: 104.26%;
+    z-index: 4;
+    opacity: 0;
+    transform: translateX(0);
+    transition: transform .9s cubic-bezier(.42, .04, .15, .97), opacity .5s ease;
   }
-  .book-mount.is-modal .flipcard-back .menu-flat[data-menu="menu-3"] {
-    position: absolute;
-    left:    3.02%;     /* (51.51 - 50) / 50 * 100 */
+  .book-mount.is-modal .book-stage[data-state="1"] .menu-flat[data-menu="menu-2"] {
+    opacity: 1;
+  }
+  .book-mount.is-modal .book-stage[data-state="2"] .menu-flat[data-menu="menu-2"] {
+    /* fades out as menu-3 takes over */
+    opacity: 0;
+    transform: translateX(-25%);
+  }
+
+  /* ── menu-3 — LEFT page at state=2 (mirrored from the editor's right-side
+       placement so it lands on the correct page after the flip). Slides
+       in from the right edge of the book like a turning page. ─────────── */
+  .book-mount.is-modal .menu-flat[data-menu="menu-3"] {
+    left:    1.18%;       /* mirror of 51.51%: 100 - 51.51 - 47.31 = 1.18 */
     top:     0.77%;
-    width:  94.62%;     /* 47.31 / 50 * 100 */
+    width:  47.31%;
     height:  99.36%;
+    z-index: 5;            /* above menu-1 once visible */
+    opacity: 0;
+    transform: translateX(70%) rotateY(-12deg);   /* off to the right, tilted */
+    transform-origin: right center;
+    transition: transform .95s cubic-bezier(.42, .04, .15, .97), opacity .55s ease .15s;
+  }
+  .book-mount.is-modal .book-stage[data-state="2"] .menu-flat[data-menu="menu-3"] {
+    opacity: 1;
+    transform: translateX(0) rotateY(0);
   }
   /* compact controls */
   .book-mount.is-modal .book-close {
