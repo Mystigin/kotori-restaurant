@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex,nofollow">
-  <title>Kotori Menu Editor</title>
+  <title>Kotori Menu Editor — v2</title>
   <link rel="icon" href="images/kotori-logo.png" type="image/png">
   <style>
     :root {
@@ -16,7 +16,7 @@
       --vermillion-2: #d77b5a;
       --gold: #b89968;
     }
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body {
       margin: 0;
       min-height: 100dvh;
@@ -27,11 +27,11 @@
       flex-direction: column;
       align-items: center;
       padding: 16px;
-      gap: 14px;
-      -webkit-tap-highlight-color: transparent;
+      gap: 12px;
       overscroll-behavior: none;
     }
 
+    /* ── ACCESS GATE ── */
     .gate {
       max-width: 420px;
       margin: 80px auto;
@@ -71,7 +71,7 @@
 
     .head {
       width: 100%;
-      max-width: 480px;
+      max-width: 520px;
       display: flex;
       justify-content: space-between;
       align-items: baseline;
@@ -90,20 +90,26 @@
       letter-spacing: .04em;
     }
 
-    /* ── BOOK PREVIEW ── */
-    .book-frame {
+    /* ── BOOK CANVAS ──
+       Fixed aspect ratio (1.22:1). The editor canvas scales to viewport
+       but everything inside is positioned in % of the canvas, so image
+       layouts are LOCKED to the book — when the book scales up or down,
+       images stay at the same relative position and size. */
+    .book {
       position: relative;
-      width: min(96vw, 480px);
-      aspect-ratio: 1.22 / 1;     /* matches phone book aspect */
+      width: min(96vw, 520px);
+      aspect-ratio: 1.22 / 1;
       background:
         linear-gradient(180deg, var(--frame-2) 0%, var(--frame) 100%);
       border-radius: 4px;
       box-shadow: 0 18px 40px -10px rgba(0,0,0,.7);
       overflow: hidden;
       touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
     }
     /* spine */
-    .book-frame::before {
+    .book::before {
       content: "";
       position: absolute;
       top: 0; bottom: 0;
@@ -112,36 +118,34 @@
       transform: translateX(-50%);
       background: linear-gradient(90deg, rgba(0,0,0,.45) 0%, rgba(80,42,17,.3) 30%, rgba(255,220,160,.2) 50%, rgba(80,42,17,.3) 70%, rgba(0,0,0,.45) 100%);
       pointer-events: none;
-      z-index: 5;
+      z-index: 50;
     }
-
-    .page {
+    /* page divider faint outlines (visual reference only) */
+    .book::after {
+      content: "";
       position: absolute;
-      top: 0; bottom: 0;
-      width: 50%;
-      overflow: hidden;
-    }
-    .page.left  { left: 0; }
-    .page.right { right: 0; }
-
-    .page img {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: 50% 50%;
+      inset: 0;
+      box-shadow: inset 0 0 0 1px rgba(120,90,50,.18);
       pointer-events: none;
-      user-select: none;
-      -webkit-user-drag: none;
-    }
-    .page.is-active {
-      box-shadow: inset 0 0 0 2px var(--vermillion);
     }
 
-    /* ── PAGE PICKER (which menu is being edited) ── */
+    /* a freely-placed menu image, positioned in % of .book */
+    .menu-img {
+      position: absolute;
+      display: block;
+      pointer-events: auto;
+      cursor: move;
+      box-shadow: 0 4px 12px -4px rgba(0,0,0,.4);
+      -webkit-user-drag: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .menu-img.is-dim { opacity: .35; pointer-events: none; }
+    .menu-img.is-active { outline: 2px solid var(--vermillion); outline-offset: 2px; z-index: 30; }
+
+    /* ── CONTROLS ── */
     .picker {
-      width: min(96vw, 480px);
+      width: min(96vw, 520px);
       display: flex;
       gap: 6px;
     }
@@ -164,9 +168,8 @@
       border-color: rgba(255,224,170,.7);
     }
 
-    /* ── CONTROLS ── */
     .controls {
-      width: min(96vw, 480px);
+      width: min(96vw, 520px);
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -177,7 +180,7 @@
     }
     .row {
       display: grid;
-      grid-template-columns: 80px 1fr 64px;
+      grid-template-columns: 70px 1fr 80px;
       gap: 10px;
       align-items: center;
     }
@@ -199,7 +202,7 @@
     }
 
     .actions {
-      width: min(96vw, 480px);
+      width: min(96vw, 520px);
       display: flex;
       gap: 6px;
       flex-wrap: wrap;
@@ -225,7 +228,7 @@
     }
 
     .out {
-      width: min(96vw, 480px);
+      width: min(96vw, 520px);
       padding: 10px 12px;
       background: rgba(0,0,0,.5);
       border: 1px solid rgba(255,214,158,.2);
@@ -236,7 +239,7 @@
       white-space: pre-wrap;
       word-break: break-all;
       overflow: auto;
-      max-height: 220px;
+      max-height: 240px;
     }
     .toast {
       position: fixed;
@@ -263,52 +266,52 @@
   <!-- ── ACCESS GATE ── -->
   <div class="gate" id="gate" hidden>
     <h1>Menu Editor</h1>
-    <p>This page is for editing the menu layout. Enter the access key to continue.</p>
+    <p>Enter the access key to continue.</p>
     <input id="key-input" type="password" placeholder="access key" autocomplete="off">
     <button id="key-submit" type="button">unlock</button>
   </div>
 
-  <!-- ── EDITOR (hidden until unlocked) ── -->
+  <!-- ── EDITOR ── -->
   <div id="editor" hidden style="display:contents">
 
     <div class="head">
-      <h1>Menu Layout</h1>
-      <span class="hint">drag the page · or use sliders</span>
+      <h1>Book layout</h1>
+      <span class="hint">drag image · or use sliders</span>
     </div>
 
-    <div class="book-frame" id="book">
-      <div class="page left"  data-page="left"  data-menu="menu-1"><img id="img-menu-1" src="images/menu-1.png" alt=""></div>
-      <div class="page right" data-page="right" data-menu="menu-2"><img id="img-menu-2" src="images/menu-2.png" alt=""></div>
+    <div class="book" id="book">
+      <!-- menu images are positioned in % of THIS book canvas -->
+      <img class="menu-img" id="img-menu-1" data-menu="menu-1" src="images/menu-1.png" alt="">
+      <img class="menu-img" id="img-menu-2" data-menu="menu-2" src="images/menu-2.png" alt="">
+      <img class="menu-img" id="img-menu-3" data-menu="menu-3" src="images/menu-3.png" alt="">
     </div>
 
     <div class="picker">
-      <button type="button" data-spread="0" class="is-active">Cover spread</button>
-      <button type="button" data-spread="1">2nd spread</button>
+      <button type="button" data-target="menu-1" class="is-active">menu-1</button>
+      <button type="button" data-target="menu-2">menu-2</button>
+      <button type="button" data-target="menu-3">menu-3</button>
     </div>
 
     <div class="controls">
       <div class="row">
-        <label>Editing</label>
-        <select id="select-target" style="grid-column: span 2; padding: 6px; background: rgba(0,0,0,.4); border: 1px solid rgba(255,214,158,.35); color: var(--ink); border-radius: 3px; font-family: inherit;">
-          <option value="menu-1">menu-1 (left of cover spread)</option>
-          <option value="menu-2">menu-2 (right of cover spread)</option>
-          <option value="menu-3">menu-3 (right of 2nd spread)</option>
-        </select>
-      </div>
-      <div class="row">
         <label>X</label>
-        <input id="rng-x" type="range" min="0" max="100" step="0.5" value="50">
-        <span class="val" id="val-x">50%</span>
+        <input id="rng-x" type="range" min="0" max="100" step="0.1" value="5">
+        <span class="val" id="val-x">5.0%</span>
       </div>
       <div class="row">
         <label>Y</label>
-        <input id="rng-y" type="range" min="0" max="100" step="0.5" value="50">
-        <span class="val" id="val-y">50%</span>
+        <input id="rng-y" type="range" min="0" max="100" step="0.1" value="8">
+        <span class="val" id="val-y">8.0%</span>
       </div>
       <div class="row">
-        <label>Scale</label>
-        <input id="rng-s" type="range" min="0.5" max="2" step="0.01" value="1">
-        <span class="val" id="val-s">1.00×</span>
+        <label>Width</label>
+        <input id="rng-w" type="range" min="5" max="100" step="0.1" value="40">
+        <span class="val" id="val-w">40.0%</span>
+      </div>
+      <div class="row">
+        <label>Height</label>
+        <input id="rng-h" type="range" min="5" max="200" step="0.1" value="84">
+        <span class="val" id="val-h">84.0%</span>
       </div>
     </div>
 
@@ -342,7 +345,7 @@
       document.getElementById('key-input').addEventListener('keydown', function (e) {
         if (e.key === 'Enter') tryUnlock();
       });
-      return;   // no editor logic until unlocked
+      return;
     }
     function tryUnlock() {
       var v = document.getElementById('key-input').value.trim();
@@ -355,100 +358,80 @@
     }
 
     /* ── STATE ──────────────────────────────────────────────────────────── */
-    var STORAGE_KEY = 'kotori-menu-positions-v3';
+    /* Each menu's layout is stored in % of the BOOK canvas:
+         x/y = top-left position of the image
+         w/h = explicit width and height
+       Defaults position each image roughly within its target page. */
+    var STORAGE_KEY = 'kotori-book-layout-v1';
     var DEFAULTS = {
-      'menu-1': { x: 50, y: 50, s: 1 },
-      'menu-2': { x: 50, y: 50, s: 1 },
-      'menu-3': { x: 50, y: 50, s: 1 }
+      'menu-1': { x:  5, y: 8, w: 40, h: 84 },
+      'menu-2': { x: 55, y: 8, w: 40, h: 84 },
+      'menu-3': { x: 55, y: 8, w: 40, h: 84 }
     };
     function loadMap() {
-      try { return Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}')); }
-      catch (e) { return Object.assign({}, DEFAULTS); }
+      try {
+        var saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+        return {
+          'menu-1': Object.assign({}, DEFAULTS['menu-1'], saved['menu-1'] || {}),
+          'menu-2': Object.assign({}, DEFAULTS['menu-2'], saved['menu-2'] || {}),
+          'menu-3': Object.assign({}, DEFAULTS['menu-3'], saved['menu-3'] || {})
+        };
+      } catch (e) { return JSON.parse(JSON.stringify(DEFAULTS)); }
     }
     function saveMap(m) {
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(m)); } catch (e) {}
     }
     var state = loadMap();
-    var current = 'menu-1';     // which menu is being edited
-    var spread  = 0;            // 0 = cover spread (menu-1 | menu-2), 1 = (blank | menu-3)
+    var current = 'menu-1';
 
     /* ── DOM REFS ───────────────────────────────────────────────────────── */
-    var rngX = document.getElementById('rng-x');
-    var rngY = document.getElementById('rng-y');
-    var rngS = document.getElementById('rng-s');
-    var valX = document.getElementById('val-x');
-    var valY = document.getElementById('val-y');
-    var valS = document.getElementById('val-s');
-    var sel  = document.getElementById('select-target');
     var book = document.getElementById('book');
-    var pageLeft  = book.querySelector('.page.left');
-    var pageRight = book.querySelector('.page.right');
     var imgs = {
       'menu-1': document.getElementById('img-menu-1'),
       'menu-2': document.getElementById('img-menu-2'),
-      'menu-3': null     // created on demand
+      'menu-3': document.getElementById('img-menu-3')
     };
-    /* lazy-load menu-3 once */
-    var img3 = new Image();
-    img3.id = 'img-menu-3';
-    img3.src = 'images/menu-3.png';
-    img3.alt = '';
-    imgs['menu-3'] = img3;
+    var rngX = document.getElementById('rng-x');
+    var rngY = document.getElementById('rng-y');
+    var rngW = document.getElementById('rng-w');
+    var rngH = document.getElementById('rng-h');
+    var valX = document.getElementById('val-x');
+    var valY = document.getElementById('val-y');
+    var valW = document.getElementById('val-w');
+    var valH = document.getElementById('val-h');
 
     /* ── RENDER ─────────────────────────────────────────────────────────── */
     function applyToImg(name) {
       var img = imgs[name];
-      if (!img) return;
       var s = state[name];
-      img.style.objectPosition = s.x.toFixed(1) + '% ' + s.y.toFixed(1) + '%';
-      img.style.transform = 'scale(' + s.s.toFixed(3) + ')';
-      img.style.transformOrigin = s.x.toFixed(1) + '% ' + s.y.toFixed(1) + '%';
+      img.style.left   = s.x.toFixed(2) + '%';
+      img.style.top    = s.y.toFixed(2) + '%';
+      img.style.width  = s.w.toFixed(2) + '%';
+      img.style.height = s.h.toFixed(2) + '%';
     }
-    function renderSpread() {
-      // remove all current images from pages
-      pageLeft.innerHTML = '';
-      pageRight.innerHTML = '';
-      pageLeft.removeAttribute('data-menu');
-      pageRight.removeAttribute('data-menu');
-      if (spread === 0) {
-        pageLeft.appendChild(imgs['menu-1']);
-        pageRight.appendChild(imgs['menu-2']);
-        pageLeft.dataset.menu = 'menu-1';
-        pageRight.dataset.menu = 'menu-2';
-      } else {
-        pageLeft.appendChild(imgs['menu-3']);
-        pageLeft.dataset.menu = 'menu-3';
-        // right page is blank in 2nd spread (back of menu-3 is the end-cover)
-      }
-      ['menu-1', 'menu-2', 'menu-3'].forEach(applyToImg);
-      highlightActivePage();
-    }
-    function highlightActivePage() {
-      pageLeft.classList.toggle('is-active',  pageLeft.dataset.menu === current);
-      pageRight.classList.toggle('is-active', pageRight.dataset.menu === current);
+    function renderAll() {
+      ['menu-1','menu-2','menu-3'].forEach(applyToImg);
+      ['menu-1','menu-2','menu-3'].forEach(function (name) {
+        imgs[name].classList.toggle('is-active', name === current);
+        imgs[name].classList.toggle('is-dim',    name !== current);
+      });
     }
     function syncControls() {
       var s = state[current];
       rngX.value = s.x;  valX.textContent = s.x.toFixed(1) + '%';
       rngY.value = s.y;  valY.textContent = s.y.toFixed(1) + '%';
-      rngS.value = s.s;  valS.textContent = s.s.toFixed(2) + '×';
-      sel.value  = current;
-      // when current menu isn't on the visible spread, switch spread
-      if ((current === 'menu-1' || current === 'menu-2') && spread !== 0) { spread = 0; updateSpreadButtons(); renderSpread(); }
-      if (current === 'menu-3' && spread !== 1) { spread = 1; updateSpreadButtons(); renderSpread(); }
-      highlightActivePage();
-    }
-    function updateSpreadButtons() {
+      rngW.value = s.w;  valW.textContent = s.w.toFixed(1) + '%';
+      rngH.value = s.h;  valH.textContent = s.h.toFixed(1) + '%';
       Array.prototype.forEach.call(document.querySelectorAll('.picker button'), function (b) {
-        b.classList.toggle('is-active', String(spread) === b.dataset.spread);
+        b.classList.toggle('is-active', b.dataset.target === current);
       });
     }
-
-    /* ── INPUT WIRING ───────────────────────────────────────────────────── */
     function commit() {
       saveMap(state);
       applyToImg(current);
     }
+
+    /* ── INPUT WIRING ───────────────────────────────────────────────────── */
     rngX.addEventListener('input', function () {
       state[current].x = parseFloat(rngX.value);
       valX.textContent = state[current].x.toFixed(1) + '%';
@@ -459,124 +442,113 @@
       valY.textContent = state[current].y.toFixed(1) + '%';
       commit();
     });
-    rngS.addEventListener('input', function () {
-      state[current].s = parseFloat(rngS.value);
-      valS.textContent = state[current].s.toFixed(2) + '×';
+    rngW.addEventListener('input', function () {
+      state[current].w = parseFloat(rngW.value);
+      valW.textContent = state[current].w.toFixed(1) + '%';
       commit();
     });
-    sel.addEventListener('change', function () {
-      current = sel.value;
-      syncControls();
+    rngH.addEventListener('input', function () {
+      state[current].h = parseFloat(rngH.value);
+      valH.textContent = state[current].h.toFixed(1) + '%';
+      commit();
     });
     Array.prototype.forEach.call(document.querySelectorAll('.picker button'), function (b) {
       b.addEventListener('click', function () {
-        spread = parseInt(b.dataset.spread, 10);
-        updateSpreadButtons();
-        renderSpread();
-        // pick a sensible current target for this spread
-        if (spread === 0 && current === 'menu-3') current = 'menu-1';
-        if (spread === 1) current = 'menu-3';
+        current = b.dataset.target;
+        renderAll();
         syncControls();
       });
     });
-    /* tap a page in the book to make it the active editing target */
+    /* tap an image to make it the active target */
     book.addEventListener('click', function (e) {
-      var page = e.target.closest('.page');
-      if (!page || !page.dataset.menu) return;
-      current = page.dataset.menu;
+      var img = e.target.closest('.menu-img');
+      if (!img) return;
+      current = img.dataset.menu;
+      renderAll();
       syncControls();
     });
 
-    /* drag on the active page to pan x/y; pinch to scale */
-    var dragStart = null, pinchStart = null, startState = null;
+    /* drag the active image to reposition (1-finger touch / mouse).
+       Pinch (2-finger) scales the active image proportionally. */
+    var dragStart = null, pinchStart = null, startSt = null, bookRect = null;
     function ptDist(t1, t2) {
       var dx = t1.clientX - t2.clientX, dy = t1.clientY - t2.clientY;
       return Math.sqrt(dx*dx + dy*dy);
     }
-    function getActiveImg() { return imgs[current]; }
-    function getActivePage() {
-      if (current === 'menu-1' || current === 'menu-3') return pageLeft;
-      return pageRight;
-    }
-
-    book.addEventListener('touchstart', function (e) {
-      var page = getActivePage();
-      var rect = page.getBoundingClientRect();
-      var t = e.touches[0];
-      // only drag if the touch is within the active page
-      if (t.clientX < rect.left || t.clientX > rect.right || t.clientY < rect.top || t.clientY > rect.bottom) return;
-      e.preventDefault();
-      startState = Object.assign({}, state[current]);
-      if (e.touches.length === 1) {
-        dragStart = { x: t.clientX, y: t.clientY, w: rect.width, h: rect.height };
+    function tStart(touches) {
+      var t = touches[0];
+      bookRect = book.getBoundingClientRect();
+      // only act if touch is within the active image's box
+      var s = state[current];
+      var ax = bookRect.left + s.x / 100 * bookRect.width;
+      var ay = bookRect.top  + s.y / 100 * bookRect.height;
+      var aw = s.w / 100 * bookRect.width;
+      var ah = s.h / 100 * bookRect.height;
+      if (t.clientX < ax || t.clientX > ax + aw || t.clientY < ay || t.clientY > ay + ah) return false;
+      startSt = Object.assign({}, s);
+      if (touches.length === 1) {
+        dragStart = { x: t.clientX, y: t.clientY };
         pinchStart = null;
-      } else if (e.touches.length === 2) {
-        pinchStart = { d: ptDist(e.touches[0], e.touches[1]) };
+      } else {
+        pinchStart = { d: ptDist(touches[0], touches[1]) };
         dragStart = null;
       }
-    }, { passive: false });
-    book.addEventListener('touchmove', function (e) {
-      if (!startState) return;
-      e.preventDefault();
-      if (e.touches.length === 1 && dragStart) {
-        var dx = e.touches[0].clientX - dragStart.x;
-        var dy = e.touches[0].clientY - dragStart.y;
-        // 1px of drag ≈ 100/page_width % of object-position (object-fit cover)
-        var nx = clamp(0, 100, startState.x - dx * (100 / dragStart.w));
-        var ny = clamp(0, 100, startState.y - dy * (100 / dragStart.h));
-        state[current].x = nx; state[current].y = ny;
-      } else if (e.touches.length === 2 && pinchStart) {
-        var d = ptDist(e.touches[0], e.touches[1]);
+      return true;
+    }
+    function tMove(touches) {
+      if (!startSt || !bookRect) return;
+      if (touches.length === 1 && dragStart) {
+        var dx = touches[0].clientX - dragStart.x;
+        var dy = touches[0].clientY - dragStart.y;
+        var nx = clamp(0, 100, startSt.x + dx / bookRect.width * 100);
+        var ny = clamp(0, 100, startSt.y + dy / bookRect.height * 100);
+        state[current].x = nx;
+        state[current].y = ny;
+      } else if (touches.length === 2 && pinchStart) {
+        var d = ptDist(touches[0], touches[1]);
         var ratio = d / pinchStart.d;
-        state[current].s = clamp(0.5, 2, startState.s * ratio);
+        state[current].w = clamp(5, 200, startSt.w * ratio);
+        state[current].h = clamp(5, 200, startSt.h * ratio);
       }
       commit();
       syncControls();
-    }, { passive: false });
-    function endDrag(e) {
-      if (e) e.preventDefault();
-      dragStart = null; pinchStart = null; startState = null;
     }
-    book.addEventListener('touchend',    endDrag);
-    book.addEventListener('touchcancel', endDrag);
+    function tEnd() {
+      dragStart = null; pinchStart = null; startSt = null; bookRect = null;
+    }
+    book.addEventListener('touchstart', function (e) {
+      if (!tStart(e.touches)) return;
+      e.preventDefault();
+    }, { passive: false });
+    book.addEventListener('touchmove',  function (e) {
+      if (!startSt) return;
+      e.preventDefault();
+      tMove(e.touches);
+    }, { passive: false });
+    book.addEventListener('touchend',    tEnd);
+    book.addEventListener('touchcancel', tEnd);
 
-    /* mouse drag (desktop) */
+    /* mouse equivalents */
     var mouseDown = false;
     book.addEventListener('mousedown', function (e) {
-      var page = getActivePage();
-      var rect = page.getBoundingClientRect();
-      if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) return;
+      if (!tStart([e])) return;
       e.preventDefault();
       mouseDown = true;
-      startState = Object.assign({}, state[current]);
-      dragStart  = { x: e.clientX, y: e.clientY, w: rect.width, h: rect.height };
     });
     window.addEventListener('mousemove', function (e) {
-      if (!mouseDown || !startState || !dragStart) return;
-      var dx = e.clientX - dragStart.x;
-      var dy = e.clientY - dragStart.y;
-      state[current].x = clamp(0, 100, startState.x - dx * (100 / dragStart.w));
-      state[current].y = clamp(0, 100, startState.y - dy * (100 / dragStart.h));
-      commit();
-      syncControls();
+      if (!mouseDown) return;
+      tMove([e]);
     });
-    window.addEventListener('mouseup', function () { mouseDown = false; startState = null; dragStart = null; });
-
-    /* mouse wheel = scale (desktop convenience) */
-    book.addEventListener('wheel', function (e) {
-      if (!book.matches(':hover')) return;
-      e.preventDefault();
-      var step = e.deltaY > 0 ? -0.04 : 0.04;
-      state[current].s = clamp(0.5, 2, state[current].s + step);
-      commit();
-      syncControls();
-    }, { passive: false });
+    window.addEventListener('mouseup', function () {
+      mouseDown = false;
+      tEnd();
+    });
 
     /* ── ACTIONS ────────────────────────────────────────────────────────── */
     document.getElementById('btn-reset').addEventListener('click', function () {
-      state = Object.assign({}, DEFAULTS);
+      state = JSON.parse(JSON.stringify(DEFAULTS));
       saveMap(state);
-      ['menu-1','menu-2','menu-3'].forEach(applyToImg);
+      renderAll();
       syncControls();
       showToast('reset');
     });
@@ -600,26 +572,21 @@
     function formatSpec() {
       var s = state;
       var lines = [
-        '/* PHONE MENU SPEC',
+        '/* PHONE BOOK LAYOUT — v2',
+        '   Each menu image is positioned within the BOOK canvas in %.',
         '   Paste this in chat for the assistant to bake in. */',
-        JSON.stringify({
-          'menu-1': s['menu-1'],
-          'menu-2': s['menu-2'],
-          'menu-3': s['menu-3']
-        }, null, 2),
+        JSON.stringify(s, null, 2),
         '',
-        '/* CSS form */',
-        '@media (max-width: 600px) {'
+        '/* CSS form (each menu is positioned within the book area) */',
       ];
       ['menu-1','menu-2','menu-3'].forEach(function (k) {
         var v = s[k];
-        lines.push('  .book-mount.is-modal .page-image .page-image-img[src$="' + k + '.png"] {');
-        lines.push('    object-position: ' + v.x.toFixed(1) + '% ' + v.y.toFixed(1) + '% !important;');
-        lines.push('    transform: scale(' + v.s.toFixed(3) + ') !important;');
-        lines.push('    transform-origin: ' + v.x.toFixed(1) + '% ' + v.y.toFixed(1) + '% !important;');
-        lines.push('  }');
+        lines.push('/* ' + k + ' */');
+        lines.push('  left:   ' + v.x.toFixed(2) + '%');
+        lines.push('  top:    ' + v.y.toFixed(2) + '%');
+        lines.push('  width:  ' + v.w.toFixed(2) + '%');
+        lines.push('  height: ' + v.h.toFixed(2) + '%');
       });
-      lines.push('}');
       return lines.join('\n');
     }
 
@@ -634,8 +601,7 @@
     }
 
     /* ── BOOT ───────────────────────────────────────────────────────────── */
-    img3.onload = function () { /* nothing — already rendered if visible */ };
-    renderSpread();
+    renderAll();
     syncControls();
   })();
   </script>
