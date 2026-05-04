@@ -112,6 +112,12 @@ body.no-intro .hero-video {
   transform: translateY(8px);
   animation: heroFadeUp 1s var(--ease) 3.65s forwards;
 }
+/* default: show the wide tagline, hide the phone variant */
+.hero-tagline-phone { display: none; }
+@media (max-width: 600px) {
+  .hero-tagline-wide  { display: none; }
+  .hero-tagline-phone { display: inline; }
+}
 .hero-ctas {
   display: flex; gap: 18px; flex-wrap: wrap; justify-content: center;
   margin-top: 14px;
