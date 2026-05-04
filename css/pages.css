@@ -62,7 +62,20 @@ body.no-intro .hero-video {
   .hero-video {
     opacity: 1;
     animation: none;
+    /* iOS sometimes paints a "tap to play" overlay button on the video
+       when autoplay is blocked (Low Power Mode etc.). Hide that button
+       and let touches pass through, so the first tap anywhere on the
+       page is what triggers the gesture-fallback play(). */
+    pointer-events: none;
   }
+}
+/* hide iOS's native big play button overlay */
+.hero-video::-webkit-media-controls-start-playback-button {
+  display: none !important;
+  -webkit-appearance: none;
+}
+.hero-video::-webkit-media-controls {
+  display: none !important;
 }
 @keyframes heroVideoIn {
   to { opacity: 1; }
