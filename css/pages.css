@@ -1493,29 +1493,44 @@ body.is-menu-leaving::before {
      desktop/tablet open-state rule (`.book-stage[data-state]:not(...)`)
      which sets width: 188vw (designed for horizontal-scroll tablets,
      not modal phones). */
-  /* Adaptive sizing: pick the LARGEST 1.42:1 rectangle that fits inside both
-     96vw wide and (100dvh - 130px) tall. Each half is therefore 0.71:1, which
-     matches the natural portrait aspect of the menu PNGs — so object-fit:
-     contain on each page produces a clean, full-bleed render with negligible
-     letterbox on every phone, regardless of viewport size or aspect ratio. */
+  /* Book-stage sized as the largest rectangle of aspect 1.18:1 that fits in
+     both 96vw and (100dvh - 130px). 1.18:1 = 2 × 0.59:1, matching the natural
+     aspect of the menu PNGs (0.58–0.67), so each half-page lines up almost
+     perfectly with one menu image — minimal letterbox. */
   .book-mount.is-modal .book-stage,
   .book-mount.is-modal .book-stage[data-state]:not([data-state="0"]) {
-    width: min(96vw, calc((100dvh - 130px) * 1.42));
-    max-width: min(96vw, calc((100dvh - 130px) * 1.42));
-    height: min(calc(96vw / 1.42), calc(100dvh - 130px));
+    width: min(96vw, calc((100dvh - 130px) * 1.18));
+    max-width: min(96vw, calc((100dvh - 130px) * 1.18));
+    height: min(calc(96vw / 1.18), calc(100dvh - 130px));
     max-height: calc(100dvh - 130px);
-    aspect-ratio: 1.42 / 1;
+    aspect-ratio: auto;
     flex: 0 0 auto;
   }
-  /* Skip per-image transforms on phone — the book-stage above is sized to
-     match the menu PNG aspect ratio, so object-fit: contain renders each
-     page cleanly without needing any crop-translate hack. Hand-tuned px
-     values were inherently device-specific; a single constant aspect-ratio
-     setup is portable to every screen. */
+  /* Render each menu page via flex centering + max-dim caps instead of
+     object-fit + absolute positioning. iOS Safari has rendering bugs with
+     object-fit: contain on images that have width/height: 100% and
+     position: absolute inside transform-style: preserve-3d ancestors —
+     symptom is the image rendering at near-natural size, anchored at one
+     edge of the page, with the rest clipped. The flex/max-dim approach
+     uses purely flow layout (no object-fit dependence), which is reliable
+     across every iOS version we've tested. */
+  .book-mount.is-modal .page-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
   .book-mount.is-modal .page-image .page-image-img,
   .book-mount.is-modal .page-image .page-image-img[src$="menu-1.png"],
   .book-mount.is-modal .page-image .page-image-img[src$="menu-2.png"],
   .book-mount.is-modal .page-image .page-image-img[src$="menu-3.png"] {
+    position: static;
+    inset: auto;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: initial;
     transform: none;
   }
   /* compact controls */
