@@ -403,9 +403,13 @@ body {
 }
 .foot-grid {
   max-width: 1180px; margin: 0 auto;
-  display: grid; gap: 40px 56px;
-  grid-template-columns: 1fr;
+  display: grid; gap: 32px 56px;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
   justify-items: start;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .foot-grid { grid-template-columns: 1fr; }
 }
 
 .foot-brand {
@@ -463,6 +467,90 @@ body {
     grid-column: 1;
     grid-row: auto;
   }
+}
+
+/* footer reviews column — compact "Guests say" panel sitting next to the
+   visit/map column. Sized to roughly match the map's height so 3 reviews
+   fit alongside it. */
+.foot-col-reviews {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.foot-col-reviews h4 {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.foot-col-reviews .foot-reviews-meta {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: .82rem;
+  letter-spacing: .04em;
+  color: var(--gold);
+  text-transform: none;
+}
+.foot-reviews-list {
+  display: flex !important;
+  flex-direction: column;
+  gap: 8px !important;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.foot-review {
+  padding: 6px 10px 8px;
+  background: rgba(255,247,229,.035);
+  border-left: 2px solid var(--vermillion);
+  border-radius: 0 2px 2px 0;
+}
+.foot-review .foot-review-stars {
+  display: block;
+  color: var(--vermillion-2, #d77b5a);
+  font-size: .68rem;
+  letter-spacing: .14em;
+  margin-bottom: 2px;
+}
+.foot-review p {
+  font-family: var(--display);
+  font-style: italic;
+  font-size: .82rem;
+  line-height: 1.32;
+  margin: 0 0 3px;
+  color: var(--washi);
+}
+.foot-review cite {
+  font-style: normal;
+  font-size: .58rem;
+  letter-spacing: .26em;
+  text-transform: uppercase;
+  color: var(--washi-dim);
+}
+.foot-review-cta {
+  display: inline-block;
+  margin-top: 4px;
+  font-family: var(--body);
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--vermillion-2, #d77b5a);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(193,74,42,.4);
+  padding-bottom: 2px;
+  align-self: flex-start;
+  transition: color .25s ease, border-color .25s ease;
+}
+.foot-review-cta:hover {
+  color: var(--washi);
+  border-color: var(--washi);
+}
+@media (max-width: 900px) {
+  .foot-col-reviews { max-width: 100%; }
 }
 
 /* footer map preview */
