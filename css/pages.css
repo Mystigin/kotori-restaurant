@@ -1526,6 +1526,118 @@ body.is-menu-leaving::before {
   .book-mount.is-modal .cover-logo { margin-top: 28px; }
   /* lift the VOL.IV / SPRING NO.02 line up so it clears the bottom gold border */
   .book-mount.is-modal .cover-meta { margin-bottom: 56px; }
+  body.is-menu-open .book-edit-mobile { display: inline-flex; }
+}
+
+/* ─── phone editor: button + bottom panel ──────────────────────────────── */
+.book-edit-mobile {
+  display: none;
+  position: fixed;
+  top: 10px; left: 10px;
+  width: 56px; height: 38px;
+  align-items: center; justify-content: center;
+  border: 1px solid rgba(255,224,170,.45);
+  background: rgba(20,12,8,.78);
+  color: #f6e7c7;
+  font-family: var(--body);
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  z-index: 1015;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+body.is-editing .book-edit-mobile {
+  background: rgba(193,74,42,.85);
+  border-color: rgba(255,224,170,.7);
+}
+.book-edit-mobile-panel {
+  position: fixed;
+  left: 8px; right: 8px;
+  bottom: 8px;
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px 12px;
+  background: rgba(15,9,5,.94);
+  border: 1px solid rgba(255,214,158,.35);
+  border-radius: 8px;
+  color: #f6e7c7;
+  font-family: var(--body);
+  font-size: .78rem;
+  z-index: 1020;
+  box-shadow: 0 14px 36px -10px rgba(0,0,0,.85);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+body.is-editing .book-edit-mobile-panel { display: flex; }
+.book-edit-mobile-panel .bemp-head {
+  font-size: .7rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: rgba(246,231,199,.78);
+  border-bottom: 1px solid rgba(255,214,158,.18);
+  padding-bottom: 6px;
+}
+.book-edit-mobile-panel .bemp-rows {
+  display: flex; flex-direction: column;
+  gap: 4px;
+}
+.book-edit-mobile-panel .bemp-row {
+  display: flex; justify-content: space-between; gap: 10px;
+  font-size: .72rem;
+}
+.book-edit-mobile-panel .bemp-row .bemp-label {
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--vermillion-2, #d77b5a);
+}
+.book-edit-mobile-panel .bemp-row .bemp-vals {
+  color: rgba(246,231,199,.85);
+  font-variant-numeric: tabular-nums;
+}
+.book-edit-mobile-panel .bemp-actions {
+  display: flex; gap: 8px;
+  border-top: 1px solid rgba(255,214,158,.18);
+  padding-top: 8px;
+}
+.book-edit-mobile-panel .bemp-actions button {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 4px;
+  border: 1px solid rgba(255,214,158,.28);
+  background: rgba(0,0,0,.4);
+  color: #f6e7c7;
+  font-family: var(--body);
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.book-edit-mobile-panel .bemp-actions .bemp-done {
+  background: rgba(193,74,42,.7);
+  border-color: rgba(255,224,170,.55);
+}
+.book-edit-mobile-panel .bemp-toast {
+  display: none;
+  font-size: .7rem;
+  color: var(--vermillion-2, #d77b5a);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.book-edit-mobile-panel .bemp-toast.on { display: block; }
+/* in edit mode, suppress the browser's default touch-pan/zoom on menu images
+   so our drag/pinch handlers get clean events. */
+body.is-editing .book-mount.is-modal .page-image-img {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 /* ─── editor mode ─── */

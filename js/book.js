@@ -279,10 +279,213 @@
     requestAnimationFrame(openMenu);
   }
 
-  /* clear out any leftover localStorage transforms from in-modal editor sessions
-     so they can't override the per-image rules baked into pages.css */
+  /* clear out any leftover localStorage transforms from the OLD desktop in-modal
+     editor; the mobile editor below uses a different key. */
   try { localStorage.removeItem('kotori-menu-transforms-v1'); } catch (e) {}
-  try { localStorage.removeItem('kotori-menu-transforms-mobile-v1'); } catch (e) {}
+
+  // ─── phone-only image-position editor ───────────────────────────────────
+  // Drag with one finger to translate, pinch with two fingers to scale.
+  // Saved values override the baked CSS while the viewport is ≤600px.
+  // "Copy CSS" outputs an @media block ready to paste into pages.css.
+  var STORAGE_KEY = 'kotori-menu-transforms-mobile-v1';
+
+  function isPhone() {
+    return window.matchMedia('(max-width: 600px)').matches;
+  }
+  function imgKey(img) {
+    var m = (img.getAttribute('src') || '').match(/menu-(\d)\.png/);
+    return m ? 'menu-' + m[1] : null;
+  }
+  function loadMap() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+    catch (e) { return {}; }
+  }
+  function saveMap(m) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(m)); } catch (e) {}
+  }
+  /* Effective tx for an image: prefer the inline style (an active edit), then
+     localStorage, then the computed transform (which is whatever the baked
+     CSS rule produced). This way a fresh drag starts from the visible position. */
+  function getEffectiveTx(img) {
+    var inline = img.style.transform || '';
+    var t = inline.match(/translate\(([-\d.]+)px,\s*([-\d.]+)px\)\s*scale\(([\d.]+)\)/);
+    if (t) return { x: parseFloat(t[1]), y: parseFloat(t[2]), s: parseFloat(t[3]) };
+    var key = imgKey(img);
+    if (key) {
+      var saved = loadMap()[key];
+      if (saved) return { x: saved.x, y: saved.y, s: saved.s };
+    }
+    var cs = window.getComputedStyle(img).transform;
+    if (cs && cs !== 'none') {
+      var m3 = cs.match(/matrix3d\(([^)]+)\)/);
+      if (m3) {
+        var p3 = m3[1].split(',').map(parseFloat);
+        return { x: p3[12], y: p3[13], s: p3[0] };
+      }
+      var m = cs.match(/matrix\(([^)]+)\)/);
+      if (m) {
+        var p = m[1].split(',').map(parseFloat);
+        return { x: p[4], y: p[5], s: p[0] };
+      }
+    }
+    return { x: 0, y: 0, s: 1 };
+  }
+  function applyTx(img, tx) {
+    img.style.transform = 'translate(' + tx.x.toFixed(1) + 'px, ' + tx.y.toFixed(1) + 'px) scale(' + tx.s.toFixed(3) + ')';
+  }
+  function persistTx(img, tx) {
+    var key = imgKey(img);
+    if (!key) return;
+    var map = loadMap();
+    map[key] = tx;
+    saveMap(map);
+  }
+  function applyAllForViewport() {
+    var phone = isPhone();
+    var map = loadMap();
+    pageImgs.forEach(function (img) {
+      var key = imgKey(img);
+      if (!key) return;
+      if (phone && map[key]) applyTx(img, map[key]);
+      else img.style.transform = '';
+    });
+  }
+  applyAllForViewport();
+  window.addEventListener('resize', applyAllForViewport);
+
+  // edit button + panel — appended to <body> because the modal element has
+  // transform: translate(-50%,-50%), which would make it the containing block
+  // for any descendant position:fixed children (placing them off-screen).
+  var editToggle = document.createElement('button');
+  editToggle.className = 'book-edit-mobile';
+  editToggle.type = 'button';
+  editToggle.setAttribute('aria-label', 'Edit menu image positions');
+  editToggle.textContent = 'edit';
+  document.body.appendChild(editToggle);
+
+  var panel = document.createElement('div');
+  panel.className = 'book-edit-mobile-panel';
+  panel.innerHTML = [
+    '<div class="bemp-head">drag image to position · pinch to scale</div>',
+    '<div class="bemp-rows"></div>',
+    '<div class="bemp-actions">',
+      '<button type="button" class="bemp-copy">copy css</button>',
+      '<button type="button" class="bemp-reset">reset all</button>',
+      '<button type="button" class="bemp-done">done</button>',
+    '</div>',
+    '<div class="bemp-toast"></div>'
+  ].join('');
+  document.body.appendChild(panel);
+  var rowsHost = panel.querySelector('.bemp-rows');
+  var toast    = panel.querySelector('.bemp-toast');
+
+  function refreshRows() {
+    rowsHost.innerHTML = '';
+    pageImgs.forEach(function (img) {
+      var key = imgKey(img); if (!key) return;
+      var tx = getEffectiveTx(img);
+      var row = document.createElement('div');
+      row.className = 'bemp-row';
+      row.innerHTML = [
+        '<span class="bemp-label">', key, '</span>',
+        '<span class="bemp-vals">x ', tx.x.toFixed(0), ' · y ', tx.y.toFixed(0), ' · s ', tx.s.toFixed(2), '</span>'
+      ].join('');
+      rowsHost.appendChild(row);
+    });
+  }
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('on');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(function () { toast.classList.remove('on'); }, 1600);
+  }
+  function enterEdit() {
+    if (!isPhone()) { showToast('phone-only'); return; }
+    document.body.classList.add('is-editing');
+    refreshRows();
+  }
+  function exitEdit() { document.body.classList.remove('is-editing'); }
+
+  editToggle.addEventListener('click', function (e) {
+    e.stopPropagation();
+    if (document.body.classList.contains('is-editing')) exitEdit();
+    else enterEdit();
+  });
+  panel.querySelector('.bemp-done').addEventListener('click', function (e) {
+    e.stopPropagation(); exitEdit();
+  });
+  panel.querySelector('.bemp-reset').addEventListener('click', function (e) {
+    e.stopPropagation();
+    saveMap({});
+    pageImgs.forEach(function (img) { img.style.transform = ''; });
+    refreshRows();
+    showToast('reset');
+  });
+  panel.querySelector('.bemp-copy').addEventListener('click', function (e) {
+    e.stopPropagation();
+    var lines = ['@media (max-width: 600px) {'];
+    pageImgs.forEach(function (img) {
+      var key = imgKey(img); if (!key) return;
+      var tx = getEffectiveTx(img);
+      lines.push('  .book-mount.is-modal .page-image .page-image-img[src$="' + key + '.png"] {');
+      lines.push('    transform: translate(' + tx.x.toFixed(1) + 'px, ' + tx.y.toFixed(1) + 'px) scale(' + tx.s.toFixed(3) + ') !important;');
+      lines.push('  }');
+    });
+    lines.push('}');
+    var css = lines.join('\n');
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(css).then(function () { showToast('copied'); },
+                                             function () { window.prompt('Copy this CSS:', css); });
+    } else {
+      window.prompt('Copy this CSS:', css);
+    }
+  });
+
+  // drag / pinch on the menu images themselves
+  pageImgs.forEach(function (img) {
+    var dragStart = null, pinchStart = null, startTx = null;
+    function dist(t1, t2) {
+      var dx = t1.clientX - t2.clientX, dy = t1.clientY - t2.clientY;
+      return Math.sqrt(dx*dx + dy*dy);
+    }
+    img.addEventListener('touchstart', function (e) {
+      if (!document.body.classList.contains('is-editing') || !isPhone()) return;
+      e.stopPropagation(); e.preventDefault();
+      startTx = getEffectiveTx(img);
+      if (e.touches.length === 1) {
+        dragStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        pinchStart = null;
+      } else if (e.touches.length === 2) {
+        pinchStart = { dist: dist(e.touches[0], e.touches[1]) };
+        dragStart = null;
+      }
+    }, { passive: false });
+    img.addEventListener('touchmove', function (e) {
+      if (!document.body.classList.contains('is-editing') || !isPhone()) return;
+      if (!startTx) return;
+      e.stopPropagation(); e.preventDefault();
+      if (e.touches.length === 1 && dragStart) {
+        var dx = e.touches[0].clientX - dragStart.x;
+        var dy = e.touches[0].clientY - dragStart.y;
+        applyTx(img, { x: startTx.x + dx, y: startTx.y + dy, s: startTx.s });
+      } else if (e.touches.length === 2 && pinchStart) {
+        var d = dist(e.touches[0], e.touches[1]);
+        var ratio = d / pinchStart.dist;
+        var newS = Math.max(0.4, Math.min(2.5, startTx.s * ratio));
+        applyTx(img, { x: startTx.x, y: startTx.y, s: newS });
+      }
+    }, { passive: false });
+    function commit() {
+      if (!startTx) return;
+      var s = img.style.transform || '';
+      var t = s.match(/translate\(([-\d.]+)px,\s*([-\d.]+)px\)\s*scale\(([\d.]+)\)/);
+      if (t) persistTx(img, { x: parseFloat(t[1]), y: parseFloat(t[2]), s: parseFloat(t[3]) });
+      dragStart = null; pinchStart = null; startTx = null;
+      refreshRows();
+    }
+    img.addEventListener('touchend',    function (e) { if (document.body.classList.contains('is-editing')) { e.stopPropagation(); commit(); } });
+    img.addEventListener('touchcancel', function (e) { if (document.body.classList.contains('is-editing')) { e.stopPropagation(); commit(); } });
+  });
 
   // initial state
   updateZ();
