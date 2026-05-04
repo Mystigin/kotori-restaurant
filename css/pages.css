@@ -1496,15 +1496,23 @@ body.is-menu-leaving::before {
     aspect-ratio: auto;
     flex: 0 0 auto;
   }
-  /* per-image positions tuned on phone via the in-modal editor (since removed) */
+  /* Per-image positions tuned on iPhone 14 Pro Max (~430 CSS px wide).
+     Expressed in vw rather than px so the same crop framing reproduces on
+     every phone — whatever the viewport width, 1vw scales linearly with it,
+     just like the book-stage (96vw) and the page area (48vw). Original
+     px values were:
+       menu-1: translate(  3.7px, -278.7px)
+       menu-2: translate( -0.4px, -261.0px)
+       menu-3: translate( -3.0px, -250.3px)
+     Converted via (px / 430 * 100)vw. */
   .book-mount.is-modal .page-image .page-image-img[src$="menu-1.png"] {
-    transform: translate(3.7px, -278.7px) scale(1.000);
+    transform: translate(0.86vw, -64.8vw) scale(1.000);
   }
   .book-mount.is-modal .page-image .page-image-img[src$="menu-2.png"] {
-    transform: translate(-0.4px, -261.0px) scale(1.000);
+    transform: translate(-0.09vw, -60.7vw) scale(1.000);
   }
   .book-mount.is-modal .page-image .page-image-img[src$="menu-3.png"] {
-    transform: translate(-3.0px, -250.3px) scale(1.000);
+    transform: translate(-0.7vw, -58.2vw) scale(1.000);
   }
   /* compact controls */
   .book-mount.is-modal .book-close {
