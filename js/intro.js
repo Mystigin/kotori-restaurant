@@ -2,10 +2,13 @@
   var KEY = 'kotori-intro-seen';
   var intro = document.querySelector('.intro');
 
-  /* ── hero video autoplay (iOS Safari sometimes silently rejects autoplay
-        even on muted videos, especially when an overlay is on top during
-        load). Force-play after metadata is ready, retry after the intro
-        clears, and fall back to the first user interaction. ───────────── */
+  /* ── hero video autoplay.
+        Primary trigger: 1 second after page open. By that point the page
+        has parsed, the video has had time to start loading, and the intro
+        splash is still up so the video starting "early" is invisible to
+        the user — but iOS has registered enough engagement signals to
+        allow play(). Backups: try at parse, on loadeddata, and on the
+        first user gesture if everything else fails. ─────────────────── */
   var hero = document.querySelector('video.hero-video');
   if (hero) {
     hero.muted = true;        // iOS sometimes only respects muted as a property
@@ -15,11 +18,11 @@
       var p = hero.play();
       if (p && typeof p.then === 'function') p.catch(function () {});
     };
-    tryPlay();
+    tryPlay();                                                          // immediate attempt
     if (hero.readyState < 2) hero.addEventListener('loadeddata', tryPlay, { once: true });
-    setTimeout(tryPlay, 500);
-    setTimeout(tryPlay, 4000);    // after the intro overlay fades out
-    /* if still paused after a moment, hook the first tap/scroll to start it */
+    setTimeout(tryPlay, 1000);                                          // primary trigger — 1s after page open
+    /* if still paused after the primary attempt, hook the first
+       tap/scroll/click as a guaranteed-allowed user-gesture fallback */
     var startOnGesture = function () {
       tryPlay();
       ['touchstart', 'click', 'scroll'].forEach(function (ev) {
@@ -32,7 +35,7 @@
           document.addEventListener(ev, startOnGesture, true);
         });
       }
-    }, 1500);
+    }, 1200);
   }
 
   if (!intro) return;
