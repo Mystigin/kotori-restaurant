@@ -1520,6 +1520,8 @@ body.is-menu-leaving::before {
     width: 38px; height: 38px;
     font-size: .85rem;
   }
+  /* hide the "click to open" cover hint on phone — modal auto-flips after 2.5s */
+  .book-mount.is-modal .cover-tap { display: none; }
 }
 
 /* ─── editor mode ─── */
