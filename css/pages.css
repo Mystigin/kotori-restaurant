@@ -1472,10 +1472,11 @@ body.is-menu-leaving::before {
 
 .book-phone-stack { display: none !important; }    /* legacy fallback, never used */
 
-/* phone-only composite (cover-flat, menu-flat images) — hidden by default;
-   the (max-width: 600px) block below shows them. */
+/* phone-only composite (cover-flat, page-flip cards, menu-flat images) —
+   hidden by default; the (max-width: 600px) block below shows them. */
 .menu-flat,
-.cover-flat { display: none; }
+.cover-flat,
+.page-flip { display: none; }
 
 /* phone: 3D book renders the same as desktop, but sized to fit the viewport
    and with the desktop-calibrated per-image transforms neutralised (those
@@ -1525,20 +1526,23 @@ body.is-menu-leaving::before {
   .book-mount.is-modal .book-spine { display: none; }
 
   .book-mount.is-modal .cover-flat,
+  .book-mount.is-modal .page-flip,
   .book-mount.is-modal .menu-flat {
     display: block;
   }
 
   /* The book-stage is the painted surface — parchment + spine + perspective
-     for the right-page flip animation. */
+     for realistic page flipping. */
   .book-mount.is-modal .book-stage {
     background: linear-gradient(180deg, #fff7e5 0%, #f3e7c9 100%);
     border-radius: 4px;
     box-shadow: 0 18px 40px -10px rgba(0,0,0,.7);
     overflow: hidden;
     position: relative;
-    perspective: 2400px;
-    perspective-origin: 50% 30%;
+    perspective: 1800px;
+    -webkit-perspective: 1800px;
+    perspective-origin: 50% 50%;
+    -webkit-perspective-origin: 50% 50%;
   }
   .book-mount.is-modal .book-stage::after {
     content: "";
@@ -1603,43 +1607,81 @@ body.is-menu-leaving::before {
     opacity: 1;
   }
 
-  /* ── RIGHT PAGE — menu-2 (state 1 only, slides off at state 2) ─────── */
-  .book-mount.is-modal .menu-flat[data-menu="menu-2"] {
-    left:   50.29%;
-    top:     0.00%;
-    width:  49.65%;
-    height: 104.26%;
-    z-index: 4;
-    opacity: 0;
-    transform: translateX(0);
-    transition: transform .9s cubic-bezier(.42, .04, .15, .97), opacity .5s ease;
+  /* ── REALISTIC PAGE FLIP ─────────────────────────────────────────────
+     Each turning page is a half-width element that rotates 180° around
+     the spine. backface-visibility: hidden ensures only the visible side
+     shows at any rotation angle, so as the right page swings up and over
+     to the left, it disappears at 90° (edge-on) and the left page that's
+     been waiting at rotateY(180°) underneath simultaneously rotates into
+     view — together they read as one continuous page-turn. */
+  .book-mount.is-modal .page-flip {
+    position: absolute;
+    top: 0;
+    width: 50%;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    /* Physics-tuned easing: slow lift, faster mid-arc, gentle settle. */
+    transition: transform 1.05s cubic-bezier(.55, .04, .35, 1),
+                box-shadow .55s ease;
+    will-change: transform;
+    /* subtle resting shadow */
+    box-shadow: 0 1px 3px rgba(0,0,0,.18);
   }
-  .book-mount.is-modal .book-stage[data-state="1"] .menu-flat[data-menu="menu-2"] {
-    opacity: 1;
-  }
-  .book-mount.is-modal .book-stage[data-state="2"] .menu-flat[data-menu="menu-2"] {
-    /* fades out as menu-3 takes over */
-    opacity: 0;
-    transform: translateX(-25%);
+  .book-mount.is-modal .page-flip > .menu-flat {
+    width: 100%;
+    height: 100%;
   }
 
-  /* ── menu-3 — LEFT page at state=2 (mirrored from the editor's right-side
-       placement so it lands on the correct page after the flip). Slides
-       in from the right edge of the book like a turning page. ─────────── */
-  .book-mount.is-modal .menu-flat[data-menu="menu-3"] {
-    left:    1.18%;       /* mirror of 51.51%: 100 - 51.51 - 47.31 = 1.18 */
-    top:     0.77%;
-    width:  47.31%;
-    height:  99.36%;
-    z-index: 5;            /* above menu-1 once visible */
-    opacity: 0;
-    transform: translateX(70%) rotateY(-12deg);   /* off to the right, tilted */
-    transform-origin: right center;
-    transition: transform .95s cubic-bezier(.42, .04, .15, .97), opacity .55s ease .15s;
+  /* RIGHT page (menu-2) — visible at state 1, flips left at state 2 */
+  .book-mount.is-modal .page-flip-right {
+    left: 50%;
+    transform-origin: 0% 50%;     /* spine = its left edge */
+    transform: rotateY(0);
+    z-index: 6;
   }
-  .book-mount.is-modal .book-stage[data-state="2"] .menu-flat[data-menu="menu-3"] {
-    opacity: 1;
-    transform: translateX(0) rotateY(0);
+  .book-mount.is-modal .book-stage[data-state="2"] .page-flip-right {
+    transform: rotateY(-180deg);
+    /* lifted-page shadow at the destination */
+    box-shadow: 6px 4px 22px rgba(0,0,0,.32);
+  }
+
+  /* LEFT page (menu-3) — waits at rotateY(180°) on the right side
+     (back-facing, invisible) until state 2, then rotates into place
+     on the left. */
+  .book-mount.is-modal .page-flip-left {
+    left: 0;
+    transform-origin: 100% 50%;   /* spine = its right edge */
+    transform: rotateY(180deg);
+    z-index: 5;
+  }
+  .book-mount.is-modal .book-stage[data-state="2"] .page-flip-left {
+    transform: rotateY(0);
+    box-shadow: -6px 4px 22px rgba(0,0,0,.32);
+  }
+
+  /* menu-2 inside the right-page card. Card width = 50% of book, so
+     editor-spec book-percentages are doubled inside the card. */
+  .book-mount.is-modal .page-flip-right .menu-flat[data-menu="menu-2"] {
+    position: absolute;
+    left:    0.58%;     /* (50.29 - 50) / 50 * 100 */
+    top:     0.00%;
+    width:  99.30%;     /* 49.65 / 50 * 100 */
+    height: 104.26%;
+  }
+
+  /* menu-3 inside the left-page card. Editor placed it at book-x 51.51%
+     (right side); it lands on the LEFT after the flip, mirrored. Inside
+     the left-page card (which spans book 0–50%), the mirrored x is:
+       book-x = 100 - 51.51 - 47.31 = 1.18
+       card-x = 1.18 / 50 * 100 = 2.36
+     and width is doubled: 47.31 * 2 = 94.62. */
+  .book-mount.is-modal .page-flip-left .menu-flat[data-menu="menu-3"] {
+    position: absolute;
+    left:    2.36%;
+    top:     0.77%;
+    width:  94.62%;
+    height:  99.36%;
   }
   /* compact controls */
   .book-mount.is-modal .book-close {
