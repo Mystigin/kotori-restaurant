@@ -1521,7 +1521,9 @@ body.is-menu-leaving::before {
     font-size: .85rem;
   }
   /* hide the "click to open" cover hint on phone — modal auto-flips after 2.5s */
-  .book-mount.is-modal .cover-tap { display: none; }
+  .book-mount.is-modal .cover-tap { display: none !important; }
+  /* nudge the cover logo down a touch so it doesn't kiss the gold border */
+  .book-mount.is-modal .cover-logo { margin-top: 28px; }
 }
 
 /* ─── editor mode ─── */
