@@ -1509,40 +1509,43 @@ body.is-menu-leaving::before {
     flex: 0 0 auto;
   }
   /* SOLID OBJECT — phone menu rendering.
-     We don't use the <img> on phone. Instead, a ::before pseudo-element
-     paints the menu PNG as a CSS background, scaled with `cover` and
-     positioned via the values you locked in /menu-editor.html. Background
-     painting bypasses the iOS Safari rendering bugs that affect
-     object-fit on transformed elements inside transform-style:preserve-3d
-     ancestors — so the book frame and the menu image are one painted
-     surface that cannot drift apart on any phone. */
-  .book-mount.is-modal .page-image .page-image-img {
-    display: none;
+     Each <img> uses the exact spec values you tuned in /menu-editor.html
+     (object-position + scale + matched transform-origin). To stop iOS
+     Safari's 3D rendering bugs from affecting these images, we break the
+     .page-image out of the surrounding transform-style: preserve-3d
+     context with `transform-style: flat`. The image then renders in a
+     normal 2D context (fast, predictable, identical to the editor's
+     preview) while the parent .leaf still flips in 3D. The book frame
+     is fully covered by the menu image (object-fit: cover), so book +
+     menu render as one painted surface that can't drift apart. */
+  .book-mount.is-modal .page-image {
+    transform-style: flat;
+    -webkit-transform-style: flat;
   }
-  .book-mount.is-modal .page-image::before {
-    content: "";
+  .book-mount.is-modal .page-image .page-image-img {
     position: absolute;
     inset: 0;
-    background-repeat: no-repeat;
-    background-size: cover;
-    /* per-menu values applied below via data-menu attribute */
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    will-change: transform;
   }
-  .book-mount.is-modal .page-image[data-menu="menu-1"]::before {
-    background-image: url('../images/menu-1.png');
-    background-position: 22.4% 47.8%;
+  .book-mount.is-modal .page-image[data-menu="menu-1"] .page-image-img {
+    object-position: 22.4% 47.8%;
     transform: scale(1.012);
+    -webkit-transform: scale(1.012);
     transform-origin: 22.4% 47.8%;
   }
-  .book-mount.is-modal .page-image[data-menu="menu-2"]::before {
-    background-image: url('../images/menu-2.png');
-    background-position: 50.0% 50.0%;
+  .book-mount.is-modal .page-image[data-menu="menu-2"] .page-image-img {
+    object-position: 50.0% 50.0%;
     transform: scale(0.966);
+    -webkit-transform: scale(0.966);
     transform-origin: 50.0% 50.0%;
   }
-  .book-mount.is-modal .page-image[data-menu="menu-3"]::before {
-    background-image: url('../images/menu-3.png');
-    background-position: 50.0% 50.0%;
+  .book-mount.is-modal .page-image[data-menu="menu-3"] .page-image-img {
+    object-position: 50.0% 50.0%;
     transform: scale(0.976);
+    -webkit-transform: scale(0.976);
     transform-origin: 50.0% 50.0%;
   }
   /* compact controls */
