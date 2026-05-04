@@ -336,13 +336,16 @@
   applyAllForViewport();
   window.addEventListener('resize', applyAllForViewport);
 
-  // build the edit button + panel and append to the modal
+  // build the edit button + panel — append to <body> rather than the modal,
+  // because .book-mount.is-modal has `transform: translate(-50%,-50%)` which
+  // creates a containing block for descendant position:fixed elements (they'd
+  // be positioned relative to the modal, not the viewport).
   var editToggle = document.createElement('button');
   editToggle.className = 'book-edit-mobile';
   editToggle.type = 'button';
   editToggle.setAttribute('aria-label', 'Edit menu image positions');
   editToggle.textContent = 'edit';
-  mount.appendChild(editToggle);
+  document.body.appendChild(editToggle);
 
   var panel = document.createElement('div');
   panel.className = 'book-edit-mobile-panel';
@@ -356,7 +359,7 @@
     '</div>',
     '<div class="bemp-toast"></div>'
   ].join('');
-  mount.appendChild(panel);
+  document.body.appendChild(panel);
   var rowsHost = panel.querySelector('.bemp-rows');
   var toast    = panel.querySelector('.bemp-toast');
 
