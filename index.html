@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kotori — Authentic Japanese Restaurant</title>
+  <meta name="description" content="Kotori — an authentic Japanese restaurant. Seasonal omakase, sushi, and sake in an intimate setting.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+
+  <link rel="icon" href="images/kotori-logo.png" type="image/png">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body class="page-home">
+
+  <div class="intro" aria-hidden="true">
+    <img class="intro-logo" src="images/kotori-logo.png" alt="">
+  </div>
+
+  <header class="deck" role="banner">
+    <a class="deck-brand" href="index.html" aria-label="Kotori — home">
+      <img class="deck-logo" src="images/kotori-logo.png" alt="Kotori">
+      <span class="deck-tag">authentic japanese restaurant</span>
+    </a>
+    <nav class="deck-nav" aria-label="Primary">
+      <a href="#menu">Menu</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" aria-label="Welcome">
+      <video class="hero-video"
+             autoplay muted loop playsinline preload="auto"
+             aria-hidden="true">
+        <source src="https://cdn.jsdelivr.net/gh/Mystigin/kotori-assets@fc0615c/kotori-fake-b-roll-1.mp4" type="video/mp4">
+      </video>
+      <div class="hero-veil" aria-hidden="true"></div>
+
+      <div class="hero-content">
+        <h1 class="hero-word">kotori</h1>
+        <span class="hero-rule" aria-hidden="true"></span>
+        <span class="hero-tagline">a small bird · a quiet table</span>
+        <div class="hero-ctas">
+          <a class="btn btn-primary" href="order.html">order online</a>
+          <a class="btn btn-ghost" href="contact.html#reserve">make a reservation</a>
+        </div>
+      </div>
+
+      <a class="hero-scroll" href="#story" aria-label="Scroll to story">
+        <span>scroll</span>
+        <span class="line" aria-hidden="true"></span>
+      </a>
+    </section>
+
+    <section class="gallery" id="story" aria-label="Food gallery">
+      <!-- boats spawned dynamically into this fleet container; see js/boats.js -->
+      <div class="gallery-fleet" aria-hidden="true"></div>
+      <div class="gallery-head">
+        <span class="eyebrow">From the counter</span>
+        <h2>Each plate, a single thought.</h2>
+        <p class="gallery-lede">A glance at recent service — sourced before dawn, set down briefly, carried away.</p>
+      </div>
+      <div class="gallery-grid">
+        <figure class="gallery-item"><img src="images/food-1.jpg"  alt="" loading="lazy"></figure>
+        <figure class="gallery-item"><img src="images/food-17.jpg" alt="" loading="lazy"></figure>
+        <figure class="gallery-item"><img src="images/food-4.jpg"  alt="" loading="lazy"></figure>
+        <figure class="gallery-item"><img src="images/food-18.jpg" alt="" loading="lazy"></figure>
+        <figure class="gallery-item"><img src="images/food-7.jpg"  alt="" loading="lazy"></figure>
+        <figure class="gallery-item"><img src="images/food-19.jpg" alt="" loading="lazy"></figure>
+        <figure class="gallery-item"><img src="images/food-10.jpg" alt="" loading="lazy"></figure>
+        <figure class="gallery-item"><img src="images/food-20.jpg" alt="" loading="lazy"></figure>
+        <figure class="gallery-item"><img src="images/food-13.jpg" alt="" loading="lazy"></figure>
+        <figure class="gallery-item"><img src="images/food-21.jpg" alt="" loading="lazy"></figure>
+        <figure class="gallery-item"><img src="images/food-16.jpg" alt="" loading="lazy"></figure>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="foot">
+    <div class="foot-grid">
+      <div class="foot-col foot-col-visit">
+        <h4>Visit</h4>
+        <ul>
+          <li>15263 Yonge St</li>
+          <li>Aurora, ON L4G 1N5</li>
+          <li>(905) 726-2083</li>
+        </ul>
+        <a class="foot-map" href="map.html" aria-label="Open larger map">
+          <iframe
+            src="https://maps.google.com/maps?q=Kotori%20Authentic%20Japanese%20Restaurant%2C%2015263%20Yonge%20St%2C%20Aurora%2C%20ON%20L4G%201N5&z=15&output=embed"
+            loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+            title="Map preview — 15263 Yonge St, Aurora"></iframe>
+          <span class="foot-map-veil" aria-hidden="true">View map →</span>
+        </a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© Kotori — All rights reserved</span>
+      <span>Designed with quiet hands</span>
+    </div>
+  </footer>
+
+  <!-- ─── menu book overlay (modal-only, hidden until activated) ─── -->
+  <div class="book-mount" id="menu">
+    <button class="book-close" type="button" aria-label="Close menu">×</button>
+    <div class="book-stage" data-state="0">
+      <div class="book">
+        <div class="book-spine" aria-hidden="true"></div>
+
+        <!-- LEAF 0 — cover | Menu 1 -->
+        <article class="leaf leaf-cover" data-leaf="0">
+          <div class="face front">
+            <div class="cover-art">
+              <span class="cover-corner cc-tl"></span>
+              <span class="cover-corner cc-tr"></span>
+              <span class="cover-corner cc-bl"></span>
+              <span class="cover-corner cc-br"></span>
+              <img class="cover-logo" src="images/kotori-logo.png" alt="">
+              <h2 class="cover-title">the menu</h2>
+              <span class="cover-rule"></span>
+              <span class="cover-meta">vol. iv · spring no. 02</span>
+              <span class="cover-tap">— click to open —</span>
+            </div>
+          </div>
+          <div class="face back">
+            <div class="page page-image">
+              <img class="page-image-img" src="images/menu-1.png" alt="Kotori menu — page 1">
+            </div>
+          </div>
+        </article>
+
+        <!-- LEAF 1 — Menu 2 | Menu 3 -->
+        <article class="leaf" data-leaf="1">
+          <div class="face front">
+            <div class="page page-image">
+              <img class="page-image-img" src="images/menu-2.png" alt="Kotori menu — page 2">
+            </div>
+          </div>
+          <div class="face back">
+            <div class="page page-image">
+              <img class="page-image-img" src="images/menu-3.png" alt="Kotori menu — page 3">
+            </div>
+          </div>
+        </article>
+
+        <!-- LEAF 2 — back cover (not flippable) -->
+        <article class="leaf leaf-back" data-leaf="2" aria-hidden="true">
+          <div class="face front">
+            <div class="page page-end">
+              <span class="end-line"></span>
+              <span class="end-thanks">— thank you —</span>
+              <span class="end-foot">kotori · est. 2019</span>
+            </div>
+          </div>
+          <div class="face back">
+            <div class="cover-art back-cover">
+              <span class="cover-corner cc-tl"></span>
+              <span class="cover-corner cc-tr"></span>
+              <span class="cover-corner cc-bl"></span>
+              <span class="cover-corner cc-br"></span>
+            </div>
+          </div>
+        </article>
+
+      </div>
+    </div>
+
+    <div class="book-controls" aria-label="Menu navigation">
+      <button class="book-prev" type="button" aria-label="Previous page">←</button>
+      <span class="book-progress" aria-live="polite">closed</span>
+      <button class="book-next" type="button" aria-label="Next page">→</button>
+    </div>
+
+    <!-- phone-only fallback: full-width vertical scroll of menu pages -->
+    <div class="book-phone-stack" aria-hidden="true">
+      <img src="images/menu-1.png" alt="Kotori menu — page 1" loading="lazy">
+      <img src="images/menu-2.png" alt="Kotori menu — page 2" loading="lazy">
+      <img src="images/menu-3.png" alt="Kotori menu — page 3" loading="lazy">
+    </div>
+  </div>
+
+  <!-- ─── gallery lightbox (hidden until a photo is clicked) ─── -->
+  <div class="lightbox" aria-hidden="true">
+    <button class="lightbox-close" type="button" aria-label="Close image">×</button>
+    <img class="lightbox-img" src="" alt="">
+  </div>
+
+  <script src="js/intro.js"></script>
+  <script src="js/book.js"></script>
+  <script src="js/gallery.js"></script>
+  <script src="js/boats.js"></script>
+</body>
+</html>

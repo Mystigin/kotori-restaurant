@@ -1,0 +1,12 @@
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+
+# Old / superseded assets kept locally but not tracked
+kotori website wood vibe.zip
+kotori_logo_4.png
+
+# Source-photo working folder (the curated subset is in images/)
+Images 2/
