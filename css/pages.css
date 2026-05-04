@@ -1475,15 +1475,26 @@ body.is-menu-leaving::before {
     width: 100vw;
     max-width: 100vw;
     height: 100dvh;
+    overflow-x: hidden;
   }
-  /* book sized to match a typical menu-page aspect (≈ 0.72 width:height per
-     side); leaves room above for the close button and below for the controls
-     within one viewport. */
-  .book-mount.is-modal .book-stage {
-    width: 96vw;
-    max-width: 96vw;
-    height: min(calc(96vw * 0.72), calc(100dvh - 130px));
-    max-height: none;
+  /* book sized so a full two-page spread fits inside the viewport.
+     Each menu page has aspect ≈ 0.7 (taller than wide), so the open
+     two-page spread is ≈ 1.4 wide:tall. We size by the smaller of:
+       — width-driven: 96vw wide × 96vw / 1.4 tall
+       — height-driven: (100dvh − chrome) tall × that × 1.4 wide
+     so the book never overflows either dimension. The is-modal+open
+     selector here is intentionally specific to override the
+     desktop/tablet open-state rule (`.book-stage[data-state]:not(...)`)
+     which sets width: 188vw (designed for horizontal-scroll tablets,
+     not modal phones). */
+  .book-mount.is-modal .book-stage,
+  .book-mount.is-modal .book-stage[data-state]:not([data-state="0"]) {
+    width: min(96vw, calc((100dvh - 150px) * 1.4));
+    max-width: min(96vw, calc((100dvh - 150px) * 1.4));
+    height: min(calc(96vw / 1.4), calc(100dvh - 150px));
+    max-height: calc(100dvh - 150px);
+    aspect-ratio: auto;
+    flex: 0 0 auto;
   }
   /* drop the per-image positional transforms on phone — the page area is too
      small for desktop-pixel translations. object-fit: contain alone gives
